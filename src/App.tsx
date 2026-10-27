@@ -8,6 +8,7 @@ import type { Route, Trip, Vehicle } from "./types/response";
 import type { OptionInterface } from "./types/general";
 import { AsyncPaginate, type LoadOptions } from "react-select-async-paginate";
 import type { GroupBase } from "react-select";
+import ModalDetail from "./components/modal-detail";
 
 interface VehicleData {
   data: Vehicle[];
@@ -28,6 +29,8 @@ interface Additional {
 
 export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [dataDetail, setDataDetail] = useState<Vehicle | null>(null);
   const [formSearch, setFormSearch] = useState<FormSearch>({
     route: [],
     trip: [],
@@ -143,11 +146,15 @@ export default function App() {
 
         setLoading(false);
       })
-      .catch((err) => {
-        console.log("coba", err);
+      .catch(() => {
         toast.error("Terjadi kesalahan dalam pengambilan data");
         setLoading(false);
       });
+  };
+
+  const onDetail = (data: Vehicle) => {
+    setShowModal(true);
+    setDataDetail(data);
   };
 
   const loadOptionRoute: LoadOptions<OptionInterface, GroupBase<OptionInterface>, Additional> = async (_, _loadedOptions, additional) => {
@@ -235,6 +242,7 @@ export default function App() {
     <div className="bg-background min-h-dvh">
       {loading && <Loading />}
       <ToastContainer theme="colored" position="top-right" autoClose={5000} transition={Slide} />
+      <ModalDetail isOpen={showModal} onClose={() => setShowModal(false)} data={dataDetail} />
 
       <div className="flex bg-primary p-4 justify-between items-center md:p-6 shadow-lg sticky top-0 z-99">
         <div className="flex flex-col">
@@ -339,7 +347,9 @@ export default function App() {
 
                 <div className="flex justify-between items-center text-xs">
                   <p className="text-text-body">Diperbarui: {dayjs(item.attributes.updated_at).format("DD-MM-YYYY HH:mm:ss")}</p>
-                  <button className="text-primary p-1 font-boldcursor-pointer">Lihat detail</button>
+                  <button className="text-primary p-1 font-boldcursor-pointer" onClick={() => onDetail(item)}>
+                    Lihat detail
+                  </button>
                 </div>
               </div>
             ))}

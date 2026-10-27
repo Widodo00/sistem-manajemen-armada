@@ -1,11 +1,13 @@
 export interface Vehicle {
-  id: number;
+  id: string;
   attributes: {
     current_status: string;
     latitude: number;
     longitude: number;
     updated_at: string;
     label: string;
+    current_stop_sequence: number;
+    occupancy_status: string;
   };
   relationships: {
     route: {

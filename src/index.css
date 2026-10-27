@@ -25,3 +25,8 @@ button:disabled {
 .card {
   @apply rounded-lg border border-border bg-white flex;
 }
+
+.react-responsive-modal-modal {
+  padding: 0 !important;
+  border-radius: 8px;
+}
