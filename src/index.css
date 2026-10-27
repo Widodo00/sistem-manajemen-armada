@@ -19,6 +19,7 @@ button {
 
 button:disabled {
   cursor: no-drop;
+  opacity: 70%;
 }
 
 .card {
