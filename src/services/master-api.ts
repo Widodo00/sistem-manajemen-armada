@@ -21,7 +21,7 @@ interface TripData {
   };
 }
 
-const MasterAPi = {
+const MasterApi = {
   getVehicles: async function (params = "") {
     return api.get<VehicleData, VehicleData>(`/vehicles${params}`);
   },
@@ -33,4 +33,4 @@ const MasterAPi = {
   },
 };
 
-export default MasterAPi;
+export default MasterApi;

@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import MasterAPi from "./services/master-api";
 import { ToastContainer, Slide, toast } from "react-toastify";
 import Loading from "./components/loading";
 import dayjs from "dayjs";
-import { BusFront, ChevronLeft, ChevronRight, CircleX, Funnel, LineSquiggle } from "lucide-react";
-import type { Route, Trip, Vehicle } from "./types/response";
-import type { OptionInterface } from "./types/general";
-import { AsyncPaginate, type LoadOptions } from "react-select-async-paginate";
-import type { GroupBase } from "react-select";
+import { BusFront, ChevronLeft, ChevronRight, CircleX, LineSquiggle } from "lucide-react";
+import type { Vehicle } from "./types/response";
 import ModalDetail from "./components/modal-detail";
+import Header from "./components/header";
+import MasterApi from "./services/master-api";
+import Filter from "./components/filter";
+import Status from "./components/status";
 
 interface VehicleData {
   data: Vehicle[];
@@ -18,23 +18,10 @@ interface VehicleData {
   total_page: number;
 }
 
-interface FormSearch {
-  route: OptionInterface[];
-  trip: OptionInterface[];
-}
-
-interface Additional {
-  page: number;
-}
-
 export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [dataDetail, setDataDetail] = useState<Vehicle | null>(null);
-  const [formSearch, setFormSearch] = useState<FormSearch>({
-    route: [],
-    trip: [],
-  });
   const optionPageSize = [10, 20, 50];
   const [vehicleData, setVehicleData] = useState<VehicleData>({
     data: [],
@@ -60,29 +47,8 @@ export default function App() {
     return [1, vehicleData.page, vehicleData.total_page];
   }, [vehicleData.page, vehicleData.total_page]);
 
-  const fetchData = (page = 1, page_size = 10, isRaw = false) => {
-    const paramsRoute = formSearch.route.map((item: OptionInterface) => item.value).join(",");
-    const paramsTrip = formSearch.trip.map((item: OptionInterface) => item.value).join(",");
-    return MasterAPi.getVehicles(`?page[offset]=${isRaw ? page : page * page_size - page_size}&page[limit]=${page_size}${paramsTrip ? `&filter[trip]=${paramsTrip}` : `&filter[route]=${paramsRoute}`}`);
-  };
-
-  const fetchDataRoute = (page = 1, page_size = 20) => {
-    return MasterAPi.getRoute(`?page[offset]=${page * page_size - page_size}&page[limit]=${page_size}`);
-  };
-
-  const fetchDataTrip = (page = 1, page_size = 20, route = "") => {
-    return MasterAPi.getTrip(`?page[offset]=${page * page_size - page_size}&page[limit]=${page_size}&route=${route}`);
-  };
-
-  const statusComponent = (status: string) => {
-    return (
-      <div
-        className={`rounded-full text-xs px-2 py-1.5 font-bold flex gap-1.5 items-center ${status === "IN_TRANSIT_TO" ? "bg-green-100 text-green-500" : status === "STOPPED_AT" ? "bg-yellow-100 text-yellow-500" : "bg-blue-100 text-blue-500"}`}
-      >
-        <div className={`size-1.5 rounded-full ${status === "IN_TRANSIT_TO" ? "bg-green-500" : status === "STOPPED_AT" ? "bg-yellow-500" : "bg-blue-500"}`} />
-        <p>{status === "IN_TRANSIT_TO" ? "Dalam perjalanan" : status === "STOPPED_AT" ? "Berhenti" : "Akan tiba"}</p>
-      </div>
-    );
+  const fetchData = (page = 1, page_size = 10, isRaw = false, filter: string = "") => {
+    return MasterApi.getVehicles(`?page[offset]=${isRaw ? page : page * page_size - page_size}&page[limit]=${page_size}${filter}`);
   };
 
   const handleOnChangeSize = (value: number) => {
@@ -129,9 +95,9 @@ export default function App() {
       });
   };
 
-  const onSearch = () => {
+  const onSearch = (value: string) => {
     setLoading(true);
-    fetchData()
+    fetchData(1, vehicleData.page_size, false, value)
       .then(async (res) => {
         let url;
         let offset = 0;
@@ -155,65 +121,6 @@ export default function App() {
   const onDetail = (data: Vehicle) => {
     setShowModal(true);
     setDataDetail(data);
-  };
-
-  const loadOptionRoute: LoadOptions<OptionInterface, GroupBase<OptionInterface>, Additional> = async (_, _loadedOptions, additional) => {
-    const page = additional?.page ?? 1;
-
-    setLoading(true);
-
-    try {
-      const res = await fetchDataRoute(page);
-      const tempRoute: OptionInterface[] = res.data.map((item: Route) => ({
-        value: item.id,
-        label: item.attributes.long_name,
-      }));
-
-      return {
-        options: tempRoute,
-        hasMore: Boolean(res.links.next),
-        additional: {
-          page: page + 1,
-        },
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadOptionTrip: LoadOptions<OptionInterface, GroupBase<OptionInterface>, Additional> = async (_, _loadedOptions, additional) => {
-    const page = additional?.page ?? 1;
-
-    if (formSearch.route.length <= 0) {
-      return {
-        options: [],
-        hasMore: false,
-        additional: {
-          page: page + 1,
-        },
-      };
-    }
-
-    setLoading(true);
-
-    try {
-      const params = formSearch.route.map((item: OptionInterface) => item.value);
-      const res = await fetchDataTrip(page, 20, params.join(","));
-      const tempTrip: OptionInterface[] = res.data.map((item: Trip) => ({
-        value: item.id,
-        label: item.attributes.headsign + " - " + item.id,
-      }));
-
-      return {
-        options: tempTrip,
-        hasMore: Boolean(res.links.next),
-        additional: {
-          page: page + 1,
-        },
-      };
-    } finally {
-      setLoading(false);
-    }
   };
 
   useEffect(() => {
@@ -244,16 +151,7 @@ export default function App() {
       <ToastContainer theme="colored" position="top-right" autoClose={5000} transition={Slide} />
       <ModalDetail isOpen={showModal} onClose={() => setShowModal(false)} data={dataDetail} />
 
-      <div className="flex bg-primary p-4 justify-between items-center md:p-6 shadow-lg sticky top-0 z-99">
-        <div className="flex flex-col">
-          <p className="font-bold text-sm text-white">TRANSJAKARTA</p>
-          <p className="text-xs text-border">MANAJEMEN ARMADA</p>
-        </div>
-        <div className="flex gap-2 items-center">
-          <div className="rounded-full size-2 bg-green-500" />
-          <p className="text-border text-xs hidden md:block">SISTEM TERHUBUNG</p>
-        </div>
-      </div>
+      <Header />
 
       <div className="px-4 py-6 flex flex-col gap-8">
         <div className="flex flex-col gap-2.5">
@@ -261,55 +159,7 @@ export default function App() {
           <p className="text-sm text-text-body">Lacak posisi dan status armada kendaraan secara real-time</p>
         </div>
 
-        <div className="card gap-3 flex-col p-5">
-          <div className="flex gap-3 items-center">
-            <Funnel className="size-9 rounded-lg p-2 text-blue-500 bg-blue-200" />
-            <p className="font-bold text-sm text-text-title">Filter</p>
-          </div>
-          <div className="flex flex-col gap-3 md:grid md:grid-cols-2">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-text-body">Rute</p>
-              <AsyncPaginate
-                value={formSearch.route}
-                loadOptions={loadOptionRoute}
-                additional={{ page: 1 }}
-                onChange={(evt) => {
-                  if (evt.length <= 0) {
-                    setFormSearch((prev) => ({ ...prev, trip: [], route: evt as OptionInterface[] }));
-                  } else {
-                    setFormSearch((prev) => ({ ...prev, route: evt as OptionInterface[] }));
-                  }
-                }}
-                placeholder="Pilih rute"
-                debounceTimeout={300}
-                isClearable
-                isMulti
-                loadingMessage={() => <p>Mohon tunggu...</p>}
-                isSearchable={false}
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-text-body">Trip</p>
-              <AsyncPaginate
-                value={formSearch.trip}
-                loadOptions={loadOptionTrip}
-                additional={{ page: 1 }}
-                onChange={(evt) => setFormSearch((prev) => ({ ...prev, trip: evt as OptionInterface[] }))}
-                placeholder="Pilih trip"
-                debounceTimeout={300}
-                isClearable
-                isMulti
-                loadingMessage={() => <p>Mohon tunggu...</p>}
-                isDisabled={formSearch.route.length <= 0}
-                cacheUniqs={[formSearch.route.map((item) => item.value).join(",")]}
-                isSearchable={false}
-              />
-            </div>
-          </div>
-          <button className="w-full bg-primary rounded-lg text-white font-medium py-2 md:px-6 md:w-fit md:self-end" onClick={onSearch}>
-            Cari
-          </button>
-        </div>
+        <Filter setLoading={(value) => setLoading(value)} onSearch={onSearch} />
 
         <div className="flex flex-col gap-4">
           <p className="text-lg text-text-title">Daftar Kendaraan</p>
@@ -323,7 +173,7 @@ export default function App() {
                     </div>
                     <p className="text-text-title">{item.attributes.label}</p>
                   </div>
-                  {statusComponent(item.attributes.current_status)}
+                  {Status(item.attributes.current_status)}
                 </div>
 
                 <div className="flex gap-2 items-center">
@@ -347,7 +197,7 @@ export default function App() {
 
                 <div className="flex justify-between items-center text-xs">
                   <p className="text-text-body">Diperbarui: {dayjs(item.attributes.updated_at).format("DD-MM-YYYY HH:mm:ss")}</p>
-                  <button className="text-primary p-1 font-boldcursor-pointer" onClick={() => onDetail(item)}>
+                  <button className="text-primary p-1 font-bold cursor-pointer rounded-lg active:bg-secondary transition-all px-1 py-2" onClick={() => onDetail(item)}>
                     Lihat detail
                   </button>
                 </div>
@@ -356,7 +206,7 @@ export default function App() {
           </div>
           <div className="card flex-col md:flex-row md:justify-between md:items-center px-4.5 py-3.5 gap-3">
             {vehicleData.data.length <= 0 ? (
-              <div className="flex flex-col gap-2 items-center">
+              <div className="flex flex-col gap-2 items-center w-full p-4 md:p-8">
                 <CircleX className="size-8 text-text-body" />
                 <p className="text-xl text-text-title">Data Tidak Ditemukan</p>
                 <p className="text-xs text-text-body text-center">Kami tidak menemukan data yang sesuai dengan pencarian atau filter yang kamu gunakan. Coba ubah filter.</p>

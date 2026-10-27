@@ -3,6 +3,7 @@ import { Modal } from "react-responsive-modal";
 import type { Vehicle } from "../types/response";
 import { Clock, XIcon } from "lucide-react";
 import dayjs from "dayjs";
+import Status from "./status";
 
 const VehicleMap = ({ latitude, longitude }: { latitude: number | undefined; longitude: number | undefined }) => {
   let mapUrl: string;
@@ -16,17 +17,6 @@ const VehicleMap = ({ latitude, longitude }: { latitude: number | undefined; lon
 };
 
 export default function ModalDetail({ isOpen, onClose, data }: { isOpen: boolean; onClose: () => void; data: Vehicle | null }) {
-  const statusComponent = (status: string) => {
-    return (
-      <div
-        className={`rounded-full text-xs px-2 py-1.5 font-bold flex gap-1.5 items-center ${status === "IN_TRANSIT_TO" ? "bg-green-100 text-green-500" : status === "STOPPED_AT" ? "bg-yellow-100 text-yellow-500" : "bg-blue-100 text-blue-500"}`}
-      >
-        <div className={`size-1.5 rounded-full ${status === "IN_TRANSIT_TO" ? "bg-green-500" : status === "STOPPED_AT" ? "bg-yellow-500" : "bg-blue-500"}`} />
-        <p>{status === "IN_TRANSIT_TO" ? "Dalam perjalanan" : status === "STOPPED_AT" ? "Berhenti" : "Akan tiba"}</p>
-      </div>
-    );
-  };
-
   const viewField = [
     { title: "RUTE", value: data?.relationships.route.data.id },
     { title: "TRIP", value: data?.relationships.trip.data.id },
@@ -53,7 +43,7 @@ export default function ModalDetail({ isOpen, onClose, data }: { isOpen: boolean
         <VehicleMap latitude={data?.attributes.latitude} longitude={data?.attributes.longitude} />
 
         <div className="flex justify-between">
-          {statusComponent(data?.attributes?.current_status as string)}
+          {Status(data?.attributes?.current_status as string)}
           <div className="flex gap-1 items-center text-text-body">
             <Clock className="size-4" />
             <p className="text-xs">Diperbarui: {dayjs(data?.attributes?.updated_at).format("DD-MM-YYYY HH:mm:ss")}</p>
