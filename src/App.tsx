@@ -22,6 +22,7 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [dataDetail, setDataDetail] = useState<Vehicle | null>(null);
+  const [filter, setFilter] = useState<string>("");
   const optionPageSize = [10, 20, 50];
   const [vehicleData, setVehicleData] = useState<VehicleData>({
     data: [],
@@ -47,8 +48,8 @@ export default function App() {
     return [1, vehicleData.page, vehicleData.total_page];
   }, [vehicleData.page, vehicleData.total_page]);
 
-  const fetchData = (page = 1, page_size = 10, isRaw = false, filter: string = "") => {
-    return MasterApi.getVehicles(`?page[offset]=${isRaw ? page : page * page_size - page_size}&page[limit]=${page_size}${filter}`);
+  const fetchData = (page = 1, page_size = 10, isRaw = false, filterParams: string = filter) => {
+    return MasterApi.getVehicles(`?page[offset]=${isRaw ? page : page * page_size - page_size}&page[limit]=${page_size}${filterParams}`);
   };
 
   const handleOnChangeSize = (value: number) => {
@@ -106,10 +107,10 @@ export default function App() {
           offset = Number(url.searchParams.get("page[offset]")) || 0;
         }
 
-        const lastResponse = await fetchData(offset, 10, true);
+        const lastResponse = await fetchData(offset, 10, true, value);
         const totalPage = offset / 10 + 1;
         setVehicleData((prev) => ({ ...prev, data: res.data, total: lastResponse.data.length + offset, total_page: totalPage }));
-
+        setFilter(value);
         setLoading(false);
       })
       .catch(() => {
