@@ -54,7 +54,7 @@ export default function Pagination({ setLoading }: { setLoading: (value: boolean
   };
 
   const { isPending, error, data } = useQuery({
-    queryKey: [`vehiclesData${params}`],
+    queryKey: [`vehiclesData`, pagination.page, pagination.page_size, filter],
     queryFn: () => {
       return fetchData().then(async (res) => {
         if (res?.links?.last && res?.links?.last !== lastLink) {
@@ -124,7 +124,7 @@ export default function Pagination({ setLoading }: { setLoading: (value: boolean
                   </div>
                   <p className="text-text-title">{item.attributes.label}</p>
                 </div>
-                {Status(item.attributes.current_status)}
+                <Status status={item.attributes.current_status} />
               </div>
 
               <div className="flex gap-2 items-center">
@@ -175,7 +175,7 @@ export default function Pagination({ setLoading }: { setLoading: (value: boolean
               <div className="flex justify-between gap-7">
                 <div className="flex gap-2 items-center text-xs">
                   <p className="text-text-body">Baris per halaman</p>
-                  <select className="text-title" onChange={(evt) => handleOnChangeSize(Number(evt.target.value))}>
+                  <select className="text-title" onChange={(evt) => handleOnChangeSize(Number(evt.target.value))} value={pagination.page_size}>
                     {optionPageSize.map((item: number) => (
                       <option value={item} key={item}>
                         {item}

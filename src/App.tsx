@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Pagination from "./components/pagination";
 
 export default function App() {
-  const queryClient = new QueryClient();
+  const [queryClient] = useState(() => new QueryClient());
   const [loading, setLoading] = useState<boolean>(true);
 
   return (

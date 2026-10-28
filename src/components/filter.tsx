@@ -90,7 +90,7 @@ export default function Filter({ setLoading, onSearch }: { setLoading: (value: b
     const paramsRoute = formSearch.route.map((item: OptionInterface) => item.value).join(",");
     const paramsTrip = formSearch.trip.map((item: OptionInterface) => item.value).join(",");
 
-    onSearch(`&filter[trip]=${paramsTrip}&filter[route]=${paramsRoute}`);
+    onSearch(`${paramsTrip ? `filter[trip]=${paramsTrip}` : ""}${paramsRoute ? `&filter[route]=${paramsRoute}` : ``}`);
   };
 
   return (

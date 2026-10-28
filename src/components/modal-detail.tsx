@@ -43,7 +43,7 @@ export default function ModalDetail({ isOpen, onClose, data }: { isOpen: boolean
         <VehicleMap latitude={data?.attributes.latitude} longitude={data?.attributes.longitude} />
 
         <div className="flex justify-between">
-          {Status(data?.attributes?.current_status as string)}
+          <Status status={data?.attributes.current_status as string} />
           <div className="flex gap-1 items-center text-text-body">
             <Clock className="size-4" />
             <p className="text-xs">Diperbarui: {dayjs(data?.attributes?.updated_at).format("DD-MM-YYYY HH:mm:ss")}</p>
