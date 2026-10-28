@@ -16,17 +16,17 @@ Aplikasi pemantauan kendaraan berbasis React dan TypeScript yang menggunakan RES
 **Prasyarat:** Node.js dan npm.
 
 1. Clone repository:
-   git clone https://github.com/Widodo00/sistem-manajemen-armada.git
-   cd sistem-manajemen-armada
+   - git clone https://github.com/Widodo00/sistem-manajemen-armada.git
+   - cd sistem-manajemen-armada
 
 2. Instal dependensi:
-   npm install
+   - npm install
 
 3. Buat file .env di direktori utama proyek:
-   VITE_API_URL=https://api-v3.mbta.com/
+   - VITE_API_URL=https://api-v3.mbta.com/
 
 4. Jalankan aplikasi:
-   npm run dev
+   - npm run dev
 
 5. Buka URL lokal yang ditampilkan di terminal.
 
