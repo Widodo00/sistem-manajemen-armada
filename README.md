@@ -1,75 +1,44 @@
-# React + TypeScript + Vite
+# Sistem Manajemen Armada
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplikasi pemantauan kendaraan berbasis React dan TypeScript yang menggunakan REST API untuk menampilkan informasi kendaraan, filter rute dan trip, pagination, serta detail kendaraan.
 
-Currently, two official plugins are available:
+## Teknologi
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React dan TypeScript
+- Vite
+- Tailwind CSS
+- TanStack Query
+- React Select Async Paginate
+- REST API
 
-## React Compiler
+## Cara Menjalankan Aplikasi
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Prasyarat:** Node.js dan npm.
 
-## Expanding the ESLint configuration
+1. Clone repository:
+   git clone https://github.com/Widodo00/sistem-manajemen-armada.git
+   cd sistem-manajemen-armada
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+2. Instal dependensi:
+   npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+3. Buat file .env di direktori utama proyek:
+   VITE_API_URL=https://api-v3.mbta.com/
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+4. Jalankan aplikasi:
+   npm run dev
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+5. Buka URL lokal yang ditampilkan di terminal.
 
-```
+## Arsitektur
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Aplikasi menggunakan **component-based architecture** dengan pemisahan tanggung jawab:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Components:** Mengelola UI dan interaksi pengguna, seperti filter, daftar kendaraan, pagination, serta modal detail.
+- **Services:** master-api.ts mengelola komunikasi dengan MBTA REST API.
+- **Utils:** api.ts menyediakan utilitas untuk kebutuhan komunikasi API.
+- **Types:** Mendefinisikan tipe data dan struktur respons API menggunakan TypeScript.
+- **State Management:** React state mengelola state UI dan pagination, sedangkan TanStack Query menangani pengambilan dan caching data API.
+- **Entry Point:** main.tsx menjadi titik masuk aplikasi, sedangkan App.tsx mengatur komponen utama.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+Struktur ini memisahkan tanggung jawab UI, komunikasi API, utilitas, dan tipe data agar kode lebih terorganisasi serta mudah dipelihara.
